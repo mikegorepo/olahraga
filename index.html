@@ -3,169 +3,972 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitCore & Glutes - Workout & Reminder</title>
+    <title>FitCore & Glutes - Latihan Perut Bawah & Bokong</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Anime.js CDN untuk Animasi Halus -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            coral: '#FF6B6B',
+                            teal: '#14B8A6',
+                            dark: '#0F172A',
+                            cardDark: '#1E293B',
+                            lightBg: '#F8FAFC'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #14B8A6;
+            border-radius: 10px;
+        }
+        .pulse-alarm {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-slate-100 min-h-screen flex flex-col">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- Header -->
-    <header class="w-full py-4 px-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/90 backdrop-blur sticky top-0 z-50">
-        <div class="flex items-center space-x-3">
-            <div class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-lg shadow-indigo-500/30 font-bold text-lg">🔥</div>
-            <div>
-                <h1 class="font-extrabold text-xl tracking-tight text-white">FitCore & Glutes</h1>
-                <p class="text-xs text-slate-400 font-medium">Perut Bawah & Pantat Kencang</p>
+    <!-- Navbar Top -->
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center text-white shadow-lg shadow-teal-500/30">
+                    <i class="fa-solid fa-dumbbell text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-teal-600 to-coral text-transparent bg-clip-text">FitCore & Glutes</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Target: Perut Bawah & Bokong</p>
+                </div>
             </div>
-        </div>
-        <div>
-            <button onclick="requestNotification()" class="bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
-                🔔 <span id="notifStatus">Aktifkan Reminder (16:00)</span>
-            </button>
+            
+            <div class="flex items-center gap-2">
+                <!-- Toggle Theme -->
+                <button id="themeToggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                    <i id="themeIcon" class="fa-solid fa-moon"></i>
+                </button>
+                <!-- Alarm Quick Access -->
+                <button onclick="switchTab('reminder')" class="p-2.5 rounded-xl bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 hover:bg-teal-100 transition relative">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="bellBadge" class="hidden absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full"></span>
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="flex-1 max-w-3xl w-full mx-auto p-4 md:p-6 space-y-6">
+    <main class="flex-1 max-w-4xl w-full mx-auto p-4 pb-24">
 
-        <!-- Banner Reminder Status / Jam -->
-        <div class="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-5 shadow-xl text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-            <div>
-                <span class="bg-white/20 text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider">Jadwal Harian</span>
-                <h2 class="text-xl font-bold mt-2">Reminder Jam 4 - 5 Sore (16:00 - 17:00)</h2>
-                <p class="text-indigo-100 text-sm mt-1">Waktu terbaik membakar lemak perut bawah & membentuk otot bokong!</p>
+        <!-- Banner Reminder Banner (Show if active) -->
+        <div id="reminderTopBanner" class="hidden mb-4 p-3 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-2xl shadow-md flex items-center justify-between text-sm">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+                <span>Pengingat aktif: <strong id="bannerTime">16:30 WIB</strong></span>
             </div>
-            <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-xl border border-white/20 text-center min-w-[130px]">
-                <div class="text-xs text-indigo-200">Waktu Sekarang</div>
-                <div id="currentTime" class="text-2xl font-black tracking-wider mt-0.5">--:--:--</div>
-            </div>
+            <button onclick="switchTab('reminder')" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-semibold backdrop-blur-sm">
+                Atur
+            </button>
         </div>
 
-        <!-- Progress Tracker -->
-        <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-5 shadow-lg">
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="font-bold text-sm uppercase tracking-wider text-slate-300">Progres Checklist Hari Ini</h3>
-                <span id="progressText" class="text-xs font-bold text-indigo-400">0 / 6 Selesai (0%)</span>
-            </div>
-            <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
-                <div id="progressBar" class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full transition-all duration-500" style="width: 0%"></div>
-            </div>
-        </div>
+        <!-- TAB 1: CHECKLIST HARIAN (HOME) -->
+        <section id="tab-home" class="tab-content space-y-6">
+            <!-- Streak & Progress Card -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-teal-500/20 rounded-full blur-2xl"></div>
+                <div class="relative z-10 flex flex-col md:flex-row justify-between md:items-center gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-700/60 text-xs font-medium text-teal-300 mb-2 border border-slate-600/50">
+                            <i class="fa-solid fa-fire text-orange-400"></i> Streak Latihan: <span id="streakCount" class="font-bold">0 Hari</span>
+                        </div>
+                        <h2 class="text-2xl font-extrabold">Progres Hari Ini</h2>
+                        <p class="text-xs text-slate-400 mt-1" id="currentDateStr">Sabtu, 10 Oktober 2026</p>
+                    </div>
 
-        <!-- Workout Player Modal / Section -->
-        <div id="workoutModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl flex flex-col space-y-6 relative">
-                <button onclick="closeWorkout()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full transition">✕</button>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right">
+                            <div class="text-3xl font-black text-teal-400" id="progressPercentText">0%</div>
+                            <div class="text-xs text-slate-400"><span id="completedCountText">0</span> dari <span id="totalExerciseText">8</span> Selesai</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="mt-4 w-full bg-slate-700/80 rounded-full h-3 overflow-hidden p-0.5 border border-slate-600/30">
+                    <div id="mainProgressBar" class="bg-gradient-to-r from-teal-400 to-emerald-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
                 
-                <div class="text-center">
-                    <span id="modalCategory" class="text-xs bg-indigo-500/20 text-indigo-400 font-semibold px-3 py-1 rounded-full uppercase">Lower Abs</span>
-                    <h3 id="modalTitlenama" class="text-2xl font-black mt-2 text-white">Reverse Crunches</h3>
-                    <p id="modalDesc" class="text-xs text-slate-400 mt-1">Angkat lutut ke dada menggunakan otot perut bawah.</p>
-                </div>
-
-                <!-- Animated SVG Visualizer -->
-                <div class="bg-slate-950 border border-slate-800/80 rounded-2xl h-56 flex items-center justify-center relative overflow-hidden shadow-inner">
-                    <svg id="workoutSvg" class="w-48 h-48" viewBox="0 0 200 200">
-                        <!-- Floor line -->
-                        <line x1="20" y1="160" x2="180" y2="160" stroke="#334155" stroke-width="4" stroke-linecap="round" />
-                        
-                        <!-- Stick Figure Body -->
-                        <g id="figure" transform="translate(100, 130)">
-                            <!-- Head -->
-                            <circle id="head" cx="0" cy="-60" r="14" fill="#6366f1" />
-                            <!-- Torso -->
-                            <line id="torso" x1="0" y1="-46" x2="0" y2="0" stroke="#818cf8" stroke-width="8" stroke-linecap="round" />
-                            <!-- Arms -->
-                            <line id="armLeft" x1="0" y1="-35" x2="-25" y2="-15" stroke="#c7d2fe" stroke-width="6" stroke-linecap="round" />
-                            <line id="armRight" x1="0" y1="-35" x2="25" y2="-15" stroke="#c7d2fe" stroke-width="6" stroke-linecap="round" />
-                            <!-- Legs -->
-                            <g id="legs">
-                                <line id="thigh" x1="0" y1="0" x2="-30" y2="30" stroke="#818cf8" stroke-width="7" stroke-linecap="round" />
-                                <line id="shin" x1="-30" y1="30" x2="-60" y2="30" stroke="#c7d2fe" stroke-width="6" stroke-linecap="round" />
-                            </g>
-                        </g>
-                    </svg>
-                    <div id="exerciseStateBadge" class="absolute bottom-3 left-3 bg-indigo-600/80 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">Mulai Gerakan</div>
-                </div>
-
-                <!-- Timer & Controls -->
-                <div class="text-center space-y-2">
-                    <div id="timerDisplay" class="text-5xl font-black text-white font-mono tracking-wider">00:45</div>
-                    <div id="repCounter" class="text-sm font-semibold text-indigo-300">Hitungan: 0 / 15 Reps</div>
-                </div>
-
-                <div class="flex gap-3">
-                    <button id="pausePlayBtn" onclick="togglePauseWorkout()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-600/30 transition">Pause</button>
-                    <button onclick="completeCurrentWorkout()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/30 transition">Selesai & Lanjut</button>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="startWorkoutPlayer()" class="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-teal-500/25 flex items-center justify-center gap-2 transition active:scale-95">
+                        <i class="fa-solid fa-play"></i> Mulai Sesi Workout (Timer & Suara)
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Checklist Section -->
-        <div class="space-y-4">
+            <!-- Filter Categories -->
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+                <button onclick="filterCategory('all')" class="cat-btn active px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-teal-500 text-white shadow-md">Semua</button>
+                <button onclick="filterCategory('lower_abs')" class="cat-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Perut Bawah</button>
+                <button onclick="filterCategory('glutes')" class="cat-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Bokong / Glutes</button>
+                <button onclick="filterCategory('cardio')" class="cat-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Kardio / HIIT</button>
+            </div>
+
+            <!-- Checklist Exercises Container -->
+            <div id="exerciseChecklistContainer" class="space-y-3">
+                <!-- Dynamic Loaded by JS -->
+            </div>
+        </section>
+
+        <!-- TAB 2: LATIHAN & ANIMASI -->
+        <section id="tab-exercises" class="tab-content hidden space-y-6">
             <div class="flex justify-between items-center">
-                <h3 class="font-extrabold text-lg text-slate-100">Daftar Gerakan Harian</h3>
-                <span class="text-xs text-slate-400">Klik "Mulai" untuk panduan & animasi</span>
+                <div>
+                    <h2 class="text-xl font-bold">Panduan Gerakan & Animasi</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Pelajari teknik gerakan yang benar</p>
+                </div>
             </div>
 
-            <div id="exerciseList" class="grid grid-cols-1 gap-3">
-                <!-- Javascript populated -->
+            <!-- List Gerakan Interactive Cards -->
+            <div id="exerciseLibraryList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Dynamically populated -->
             </div>
-        </div>
+        </section>
 
+        <!-- TAB 3: PENGINGAT / ALARM -->
+        <section id="tab-reminder" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-950/50 text-orange-500 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold">Pengingat Olahraga Harian</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Disarankan jam 16:00 - 17:00 (4 - 5 Sore)</p>
+                    </div>
+                </div>
+
+                <!-- Alarm Settings Card -->
+                <div class="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-sm font-semibold block">Aktifkan Reminder</span>
+                            <span class="text-xs text-slate-500">Notifikasi & Suara Pengingat</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="reminderToggle" class="sr-only peer" onchange="toggleReminder(this.checked)">
+                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:peer-focus:ring-teal-800 peer-checked:bg-teal-500"></div>
+                        </label>
+                    </div>
+
+                    <hr class="border-slate-200 dark:border-slate-800">
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Pilih Waktu Pengingat:</label>
+                        <div class="flex gap-2">
+                            <input type="time" id="reminderTimeInput" value="16:30" class="flex-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-2.5 font-bold text-lg text-center focus:ring-2 focus:ring-teal-500 outline-none">
+                            <button onclick="saveReminderTime()" class="px-5 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl shadow-md transition text-sm">
+                                Simpan
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Preset Buttons for 4-5 Sore -->
+                    <div class="space-y-1">
+                        <span class="text-[11px] text-slate-400">Rekomendasi Jam Sore:</span>
+                        <div class="flex gap-2">
+                            <button onclick="setQuickTime('16:00')" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium hover:border-teal-500">16:00 (4 Sore)</button>
+                            <button onclick="setQuickTime('16:30')" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium hover:border-teal-500">16:30</button>
+                            <button onclick="setQuickTime('17:00')" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium hover:border-teal-500">17:00 (5 Sore)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Audio & Notification Buttons -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="testAudioAlarm()" class="py-2.5 px-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-volume-high text-teal-500"></i> Tes Audio Alarm
+                    </button>
+                    <button onclick="requestNotificationPermission()" class="py-2.5 px-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-bell-ring text-orange-500"></i> Izin Notifikasi Web
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: STATISTIK / PROGRESS -->
+        <section id="tab-stats" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                <h2 class="text-lg font-bold">Riwayat & Log Latihan</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Catatan konsistensi Anda bulan ini</p>
+                
+                <!-- Simple History Stats -->
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <div class="p-4 bg-teal-50 dark:bg-teal-950/30 rounded-2xl border border-teal-100 dark:border-teal-900/50 text-center">
+                        <div class="text-2xl font-black text-teal-600 dark:text-teal-400" id="statTotalCompletedDays">0 Hari</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Total Hari Latihan</div>
+                    </div>
+                    <div class="p-4 bg-orange-50 dark:bg-orange-950/30 rounded-2xl border border-orange-100 dark:border-orange-900/50 text-center">
+                        <div class="text-2xl font-black text-orange-500" id="statBestStreak">0 Hari</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Streak Terpanjang</div>
+                    </div>
+                </div>
+
+                <!-- Calendar Log Visualizer -->
+                <div class="pt-4">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">7 Hari Terakhir</h3>
+                    <div class="grid grid-cols-7 gap-2 text-center" id="weeklyTrackerLog">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 flex justify-end">
+                    <button onclick="resetAllData()" class="text-xs text-rose-500 hover:text-rose-600 font-semibold">
+                        <i class="fa-solid fa-trash-can mr-1"></i> Reset Data Aplikasi
+                    </button>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="py-6 text-center text-xs text-slate-500 border-t border-slate-800/60 mt-auto">
-        FitCore & Glutes Routine • Dibuat khusus untuk Anda 💪
-    </footer>
+    <!-- Bottom Navigation Bar (Mobile Friendly) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800">
+        <div class="max-w-md mx-auto flex justify-around py-2">
+            <button onclick="switchTab('home')" id="nav-home" class="nav-btn active flex flex-col items-center gap-1 text-teal-500 p-2 text-xs font-semibold">
+                <i class="fa-solid fa-list-check text-lg"></i>
+                <span>Checklist</span>
+            </button>
+            <button onclick="switchTab('exercises')" id="nav-exercises" class="nav-btn flex flex-col items-center gap-1 text-slate-400 p-2 text-xs font-semibold">
+                <i class="fa-solid fa-person-walking text-lg"></i>
+                <span>Gerakan</span>
+            </button>
+            <button onclick="switchTab('reminder')" id="nav-reminder" class="nav-btn flex flex-col items-center gap-1 text-slate-400 p-2 text-xs font-semibold">
+                <i class="fa-solid fa-bell text-lg"></i>
+                <span>Pengingat</span>
+            </button>
+            <button onclick="switchTab('stats')" id="nav-stats" class="nav-btn flex flex-col items-center gap-1 text-slate-400 p-2 text-xs font-semibold">
+                <i class="fa-solid fa-chart-line text-lg"></i>
+                <span>Statistik</span>
+            </button>
+        </div>
+    </nav>
 
-    <!-- Script Logika -->
+    <!-- WORKOUT PLAYER MODAL -->
+    <div id="workoutPlayerModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex flex-col justify-between p-6">
+        <!-- Top bar -->
+        <div class="flex justify-between items-center text-white">
+            <button onclick="closeWorkoutPlayer()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-slate-700">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="text-center">
+                <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider block">Sesi Workout Active</span>
+                <span id="playerProgressIndex" class="text-xs text-teal-400 font-bold">Gerakan 1 dari 8</span>
+            </div>
+            <button onclick="toggleSoundMute()" id="muteBtn" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-slate-700 text-teal-400">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+        </div>
+
+        <!-- Center Exercise Display & Canvas -->
+        <div class="flex flex-col items-center justify-center my-auto space-y-4 max-w-lg mx-auto w-full text-center">
+            <!-- Canvas Canvas for Animation -->
+            <div class="w-full max-w-[300px] h-[220px] bg-slate-900 rounded-3xl border border-slate-800 flex items-center justify-center p-2 relative shadow-2xl overflow-hidden">
+                <canvas id="playerCanvas" width="300" height="220" class="w-full h-full object-contain"></canvas>
+                <div id="playerRestOverlay" class="absolute inset-0 bg-teal-950/90 flex flex-col items-center justify-center hidden">
+                    <i class="fa-solid fa-mug-hot text-4xl text-teal-400 mb-2"></i>
+                    <span class="text-xl font-bold text-white">WAKTU ISTIRAHAT</span>
+                    <span class="text-xs text-teal-300 mt-1">Persiapkan gerakan berikutnya</span>
+                </div>
+            </div>
+
+            <!-- Title & Info -->
+            <div>
+                <span id="playerCategoryBadge" class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30 mb-2">Perut Bawah</span>
+                <h3 id="playerExerciseTitle" class="text-2xl font-black text-white">Reverse Crunches</h3>
+                <p id="playerExerciseDesc" class="text-xs text-slate-400 mt-1 max-w-sm px-2">Angkat pinggul dari lantai menggunakan otot perut bawah.</p>
+            </div>
+
+            <!-- Countdown Ring / Timer Display -->
+            <div class="relative flex items-center justify-center">
+                <div class="text-6xl font-black text-white tracking-tight font-mono" id="playerTimerText">45</div>
+                <span class="text-xs text-slate-400 ml-1 self-end mb-2">Detik</span>
+            </div>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="max-w-lg mx-auto w-full space-y-3">
+            <div class="flex gap-3">
+                <button onclick="prevExercise()" class="py-3 px-5 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-bold transition">
+                    <i class="fa-solid fa-backward"></i>
+                </button>
+                <button onclick="togglePlayPauseWorkout()" id="playerPlayBtn" class="flex-1 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-extrabold rounded-2xl shadow-lg shadow-teal-500/30 text-lg transition">
+                    <i class="fa-solid fa-pause mr-2"></i> Jeda
+                </button>
+                <button onclick="nextExercise()" class="py-3 px-5 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-bold transition">
+                    <i class="fa-solid fa-forward"></i>
+                </button>
+            </div>
+            <button onclick="completeCurrentExerciseManual()" class="w-full py-2.5 bg-slate-800/80 hover:bg-slate-700 text-teal-400 text-xs font-bold rounded-xl border border-slate-700">
+                <i class="fa-solid fa-check mr-1"></i> Tandai Selesai & Lanjut
+            </button>
+        </div>
+    </div>
+
+    <!-- Custom Notification Popup / Toast -->
+    <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-teal-500/40 flex items-center gap-3 transition-all duration-300 -translate-y-24 opacity-0">
+        <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-sm">
+            <i class="fa-solid fa-bell"></i>
+        </div>
+        <div>
+            <h4 class="text-xs font-bold text-teal-400" id="toastTitle">Notifikasi</h4>
+            <p class="text-xs text-slate-200" id="toastMsg">Pesan di sini...</p>
+        </div>
+    </div>
+
     <script>
-        const exercises = [
-            { id: 'rev_crunch', cat: 'Perut Bawah', name: 'Reverse Crunches', desc: 'Berbaring telentang, tekuk lutut 90 derajat, angkat pinggul ke dada menggunakan otot perut bawah.', duration: 45, reps: '15 Reps' },
-            { id: 'leg_raises', cat: 'Perut Bawah', name: 'Leg Raises', desc: 'Berbaring telentang, tangan di bawah pinggul, angkat kedua kaki lurus perlahan tanpa menyentuh lantai.', duration: 45, reps: '12 Reps' },
-            { id: 'mountain_climbers', cat: 'Perut Bawah & Kardio', name: 'Mountain Climbers', desc: 'Posisi plank, tarik lutut bergantian ke dada dengan tempo stabil.', duration: 45, reps: '40 Detik' },
-            { id: 'glute_bridges', cat: 'Bokong (Glutes)', name: 'Glute Bridges', desc: 'Berbaring telentang, tekuk lutut, dorong pinggul ke atas menggunakan tumit & kencangkan bokong.', duration: 45, reps: '15 Reps' },
-            { id: 'body_squats', cat: 'Bokong & Paha', name: 'Bodyweight Squats', desc: 'Berdiri tegak, dorong pinggul ke belakang seperti hendak duduk, turunkan tubuh lalu bangkit.', duration: 45, reps: '15 Reps' },
-            { id: 'donkey_kicks', cat: 'Bokong (Glutes)', name: 'Donkey Kicks', desc: 'Posisi merangkak, tendangkan kaki ke belakang-atas dengan lutut tertekuk 90 derajat.', duration: 45, reps: '15 Reps / Kaki' }
+        const EXERCISES_DATA = [
+            {
+                id: 'rev_crunches',
+                name: 'Reverse Crunches',
+                category: 'lower_abs',
+                categoryLabel: 'Perut Bawah',
+                reps: '3 Set x 12-15 Reps',
+                durationSec: 45,
+                desc: 'Berbaring telentang, angkat lutut 90 derajat lalu gunakan otot perut bawah untuk mengangkat pinggul sedikit dari lantai.',
+                animationType: 'reverse_crunch'
+            },
+            {
+                id: 'leg_raises',
+                name: 'Leg Raises',
+                category: 'lower_abs',
+                categoryLabel: 'Perut Bawah',
+                reps: '3 Set x 10-12 Reps',
+                durationSec: 45,
+                desc: 'Berbaring telentang, letakkan tangan di bawah pinggul, angkat kedua kaki lurus ke atas lalu turunkan perlahan tanpa menyentuh lantai.',
+                animationType: 'leg_raise'
+            },
+            {
+                id: 'mountain_climbers',
+                name: 'Mountain Climbers',
+                category: 'lower_abs',
+                categoryLabel: 'Perut Bawah / Kardio',
+                reps: '3 Set x 45 Detik',
+                durationSec: 45,
+                desc: 'Posisi high plank, tarik lutut bergantian ke arah dada secara cepat dan stabil.',
+                animationType: 'mountain_climber'
+            },
+            {
+                id: 'glute_bridges',
+                name: 'Glute Bridges',
+                category: 'glutes',
+                categoryLabel: 'Bokong / Glutes',
+                reps: '3-4 Set x 15 Reps',
+                durationSec: 45,
+                desc: 'Berbaring dengan lutut ditekuk, dorong pinggul ke atas menggunakan tumit dan kencangkan otot bokong di puncak gerakan.',
+                animationType: 'glute_bridge'
+            },
+            {
+                id: 'bodyweight_squats',
+                name: 'Bodyweight Squats',
+                category: 'glutes',
+                categoryLabel: 'Bokong / Glutes',
+                reps: '3 Set x 15 Reps',
+                durationSec: 45,
+                desc: 'Berdiri tegak, dorong pinggul ke belakang seperti hendak duduk di kursi hingga paha sejajar lantai, lalu dorong kembali ke atas.',
+                animationType: 'squat'
+            },
+            {
+                id: 'donkey_kicks',
+                name: 'Donkey Kicks & Fire Hydrants',
+                category: 'glutes',
+                categoryLabel: 'Bokong / Glutes',
+                reps: '3 Set x 15 Reps / Kaki',
+                durationSec: 45,
+                desc: 'Posisi merangkak. Tendangkan satu kaki ke belakang-atas dengan lutut ditekuk, bergantian dengan angkat ke samping.',
+                animationType: 'donkey_kick'
+            },
+            {
+                id: 'high_knees',
+                name: 'High Knees',
+                category: 'cardio',
+                categoryLabel: 'Kardio / HIIT',
+                reps: '3 Set x 30 Detik',
+                durationSec: 30,
+                desc: 'Lari di tempat dengan mengagkat lutut setinggi pinggul secara cepat untuk membakar lemak perut secara menyeluruh.',
+                animationType: 'high_knees'
+            },
+            {
+                id: 'jumping_jacks',
+                name: 'Jumping Jacks',
+                category: 'cardio',
+                categoryLabel: 'Kardio / HIIT',
+                reps: '3 Set x 45 Detik',
+                durationSec: 45,
+                desc: 'Melompat sambil membuka kaki dan menepuk tangan di atas kepala untuk meningkatkan detak jantung.',
+                animationType: 'jumping_jack'
+            }
         ];
 
-        let completedExercises = JSON.parse(localStorage.getItem('fit_completed_' + new Date().toDateString())) || {};
-        let currentActiveExercise = null;
-        let timerInterval = null;
-        let timeLeft = 45;
-        let isPaused = false;
-        let currentAnimation = null;
+        let state = {
+            completedExercises: {}, // format: { "2026-10-10": ["rev_crunches", "glute_bridges"] }
+            reminderEnabled: true,
+            reminderTime: "16:30",
+            streak: 0,
+            soundMuted: false,
+            activeFilter: 'all'
+        };
 
-        function playBeep(frequency = 440, duration = 150) {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.value = frequency;
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration / 1000);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration / 1000);
-            } catch (e) {}
+        let activeWorkoutIndex = 0;
+        let workoutTimer = null;
+        let remainingTime = 0;
+        let isResting = false;
+        let isPaused = false;
+        let animFrameId = null;
+        let alarmCheckInterval = null;
+
+        // Initialize App on DOM Load
+        window.onload = function() {
+            loadState();
+            setupTheme();
+            renderChecklist();
+            renderLibrary();
+            renderStats();
+            updateBanner();
+            initAlarmSystem();
+            setupCanvasAnimations();
+            
+            // Display Current Date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const todayStr = new Date().toLocaleDateString('id-ID', options);
+            document.getElementById('currentDateStr').innerText = todayStr;
+        };
+
+        function getTodayKey() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        function speakText(text) {
+        function loadState() {
+            const saved = localStorage.getItem('fitcore_glutes_data');
+            if (saved) {
+                try {
+                    state = { ...state, ...JSON.parse(saved) };
+                } catch(e) { console.error("Error loading state", e); }
+            }
+            if (!state.completedExercises[getTodayKey()]) {
+                state.completedExercises[getTodayKey()] = [];
+            }
+            calculateStreak();
+        }
+
+        function saveState() {
+            localStorage.setItem('fitcore_glutes_data', JSON.stringify(state));
+        }
+
+        function calculateStreak() {
+            let streak = 0;
+            let d = new Date();
+            while (true) {
+                const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                const list = state.completedExercises[key] || [];
+                if (list.length >= 3) { // At least 3 exercises completed counts as workout day
+                    streak++;
+                    d.setDate(d.getDate() - 1);
+                } else {
+                    // Check if today hasn't been completed yet, don't break streak if yesterday was completed
+                    if (key === getTodayKey()) {
+                        d.setDate(d.getDate() - 1);
+                        continue;
+                    }
+                    break;
+                }
+            }
+            state.streak = streak;
+            document.getElementById('streakCount').innerText = `${streak} Hari`;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-teal-500', 'active');
+                btn.classList.add('text-slate-400');
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-slate-400');
+                activeNav.classList.add('text-teal-500', 'active');
+            }
+        }
+
+        function setupTheme() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+                themeIcon.className = 'fa-solid fa-sun';
+            }
+
+            themeToggle.onclick = () => {
+                document.documentElement.classList.toggle('dark');
+                const isDark = document.documentElement.classList.contains('dark');
+                themeIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            };
+        }
+
+        function renderChecklist() {
+            const container = document.getElementById('exerciseChecklistContainer');
+            container.innerHTML = '';
+
+            const todayKey = getTodayKey();
+            const todayCompleted = state.completedExercises[todayKey] || [];
+
+            const filtered = EXERCISES_DATA.filter(item => {
+                if (state.activeFilter === 'all') return true;
+                return item.category === state.activeFilter;
+            });
+
+            filtered.forEach(item => {
+                const isDone = todayCompleted.includes(item.id);
+
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl bg-white dark:bg-slate-800 border transition-all duration-200 flex items-center justify-between gap-3 shadow-sm ${
+                    isDone ? 'border-teal-500/50 bg-teal-50/30 dark:bg-teal-950/20' : 'border-slate-200 dark:border-slate-700/80'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="toggleExerciseCheck('${item.id}')">
+                        <div class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
+                            isDone ? 'bg-teal-500 border-teal-500 text-white' : 'border-slate-300 dark:border-slate-600'
+                        }">
+                            ${isDone ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm ${isDone ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-100'}">${item.name}</h4>
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${item.categoryLabel}</span>
+                                <span class="text-xs text-slate-400 font-medium">${item.reps}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="previewExerciseAnimation('${item.id}')" class="p-2 text-slate-400 hover:text-teal-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition" title="Lihat Animasi">
+                        <i class="fa-solid fa-circle-play text-lg"></i>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+
+            // Update Progress Percentage
+            const total = EXERCISES_DATA.length;
+            const completedCount = todayCompleted.length;
+            const percent = Math.round((completedCount / total) * 100);
+
+            document.getElementById('progressPercentText').innerText = `${percent}%`;
+            document.getElementById('completedCountText').innerText = completedCount;
+            document.getElementById('totalExerciseText').innerText = total;
+            document.getElementById('mainProgressBar').style.width = `${percent}%`;
+        }
+
+        function toggleExerciseCheck(id) {
+            const todayKey = getTodayKey();
+            let list = state.completedExercises[todayKey] || [];
+
+            if (list.includes(id)) {
+                list = list.filter(item => item !== id);
+                speakSynthetic("Dibatalkan");
+            } else {
+                list.push(id);
+                playBeep(600, 0.15);
+                speakSynthetic("Bagus! Gerakan selesai.");
+            }
+
+            state.completedExercises[todayKey] = list;
+            calculateStreak();
+            saveState();
+            renderChecklist();
+            renderStats();
+        }
+
+        function filterCategory(cat) {
+            state.activeFilter = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.remove('bg-teal-500', 'text-white', 'shadow-md');
+                btn.classList.add('bg-white', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300');
+            });
+            event.target.classList.remove('bg-white', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300');
+            event.target.classList.add('bg-teal-500', 'text-white', 'shadow-md');
+            renderChecklist();
+        }
+
+        function renderLibrary() {
+            const container = document.getElementById('exerciseLibraryList');
+            container.innerHTML = '';
+
+            EXERCISES_DATA.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between space-y-3';
+                card.innerHTML = `
+                    <div class="w-full h-40 bg-slate-900 rounded-xl overflow-hidden relative flex items-center justify-center">
+                        <canvas id="canvas-lib-${item.id}" width="260" height="150" class="w-full h-full object-contain"></canvas>
+                        <span class="absolute top-2 left-2 text-[10px] bg-slate-800/80 text-teal-300 font-bold px-2 py-0.5 rounded-md border border-slate-700">${item.categoryLabel}</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-800 dark:text-slate-100">${item.name}</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">${item.desc}</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/60">
+                        <span class="text-xs font-semibold text-teal-600 dark:text-teal-400">${item.reps}</span>
+                        <button onclick="startSpecificWorkout('${item.id}')" class="px-3 py-1.5 bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold rounded-lg shadow-sm">
+                            Mulai Timer
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function setupCanvasAnimations() {
+            EXERCISES_DATA.forEach(item => {
+                const canvas = document.getElementById(`canvas-lib-${item.id}`);
+                if (canvas) {
+                    startStickmanLoop(canvas, item.animationType);
+                }
+            });
+        }
+
+        // Stickman Stick Animation Drawer
+        function startStickmanLoop(canvas, animType) {
+            const ctx = canvas.getContext('2d');
+            let frame = 0;
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                ctx.strokeStyle = '#14B8A6'; // Teal Stickman
+                ctx.fillStyle = '#14B8A6';
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+
+                const t = (Math.sin(frame * 0.05) + 1) / 2; // 0 to 1 smooth oscillation
+
+                switch(animType) {
+                    case 'reverse_crunch':
+                        // Lying flat vs legs knees lifted
+                        drawLyingHead(ctx, cx - 60, cy + 20);
+                        // Torso
+                        drawLine(ctx, cx - 50, cy + 20, cx, cy + 20);
+                        // Hip lift
+                        const hipY = cy + 20 - t * 15;
+                        drawLine(ctx, cx, cy + 20, cx + 10, hipY);
+                        // Knees bent
+                        const kneeX = cx + 10 - t * 20;
+                        const kneeY = hipY - 30;
+                        drawLine(ctx, cx + 10, hipY, kneeX, kneeY);
+                        drawLine(ctx, kneeX, kneeY, kneeX + 10, kneeY + 20);
+                        break;
+
+                    case 'leg_raise':
+                        drawLyingHead(ctx, cx - 60, cy + 20);
+                        drawLine(ctx, cx - 50, cy + 20, cx, cy + 20); // Torso
+                        // Legs angle
+                        const angle = (t * 80) * (Math.PI / 180); // 0 to 80 deg
+                        const legX = cx + Math.cos(angle) * 50;
+                        const legY = (cy + 20) - Math.sin(angle) * 50;
+                        drawLine(ctx, cx, cy + 20, legX, legY);
+                        break;
+
+                    case 'mountain_climber':
+                        // Plank pose with moving legs
+                        const handX = cx - 30, handY = cy + 30;
+                        const headX = cx - 40, headY = cy - 10;
+                        drawHead(ctx, headX, headY);
+                        drawLine(ctx, headX, headY + 10, cx + 20, cy); // Back
+                        drawLine(ctx, cx - 20, cy - 5, handX, handY); // Arms
+                        // Leg 1
+                        const k1X = cx + 20 - t * 30;
+                        drawLine(ctx, cx + 20, cy, k1X, cy + 15);
+                        drawLine(ctx, k1X, cy + 15, cx + 40, cy + 30);
+                        break;
+
+                    case 'glute_bridge':
+                        drawLyingHead(ctx, cx - 60, cy + 30);
+                        // Torso lifting
+                        const bHipY = cy + 30 - t * 35;
+                        drawLine(ctx, cx - 50, cy + 30, cx, bHipY); // Torso
+                        drawLine(ctx, cx, bHipY, cx + 30, cy + 30); // Thigh
+                        drawLine(ctx, cx + 30, cy + 30, cx + 30, cy + 40); // Feet
+                        break;
+
+                    case 'squat':
+                        const sqY = cy - 20 + t * 25; // Squatting down
+                        drawHead(ctx, cx, sqY - 35);
+                        drawLine(ctx, cx, sqY - 25, cx, sqY); // Spine
+                        // Thigh
+                        const kneeSqX = cx + 20;
+                        const kneeSqY = sqY + 15 + t * 10;
+                        drawLine(ctx, cx, sqY, kneeSqX, kneeSqY);
+                        drawLine(ctx, kneeSqX, kneeSqY, kneeSqX - 5, cy + 40);
+                        // Arms stretched
+                        drawLine(ctx, cx, sqY - 15, cx + 25, sqY - 15);
+                        break;
+
+                    case 'donkey_kick':
+                        // On all fours
+                        drawHead(ctx, cx - 40, cy - 10);
+                        drawLine(ctx, cx - 30, cy - 5, cx + 20, cy - 5); // Back
+                        drawLine(ctx, cx - 20, cy - 5, cx - 20, cy + 30); // Front arms
+                        drawLine(ctx, cx + 15, cy - 5, cx + 15, cy + 30); // Support leg
+                        // Kicking leg up
+                        const kickY = cy - 10 - t * 25;
+                        drawLine(ctx, cx + 20, cy - 5, cx + 35, kickY);
+                        drawLine(ctx, cx + 35, kickY, cx + 20, kickY - 10);
+                        break;
+
+                    case 'high_knees':
+                        drawHead(ctx, cx, cy - 40);
+                        drawLine(ctx, cx, cy - 30, cx, cy + 10); // Body
+                        // Alternating knee
+                        const hkY = cy - 10 * t;
+                        drawLine(ctx, cx, cy + 10, cx + 20, hkY);
+                        drawLine(ctx, cx + 20, hkY, cx + 20, cy + 35);
+                        drawLine(ctx, cx, cy + 10, cx - 15, cy + 35);
+                        break;
+
+                    case 'jumping_jack':
+                        const armAngle = t * 1.2; // Arms opening
+                        drawHead(ctx, cx, cy - 40);
+                        drawLine(ctx, cx, cy - 30, cx, cy + 10); // Body
+                        // Arms
+                        drawLine(ctx, cx, cy - 20, cx - Math.cos(armAngle)*30, cy - Math.sin(armAngle)*30);
+                        drawLine(ctx, cx, cy - 20, cx + Math.cos(armAngle)*30, cy - Math.sin(armAngle)*30);
+                        // Legs opening
+                        const legSpread = t * 25;
+                        drawLine(ctx, cx, cy + 10, cx - legSpread, cy + 40);
+                        drawLine(ctx, cx, cy + 10, cx + legSpread, cy + 40);
+                        break;
+                }
+
+                ctx.restore();
+                frame++;
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        function drawHead(ctx, x, y) {
+            ctx.beginPath();
+            ctx.arc(x, y, 10, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawLyingHead(ctx, x, y) {
+            ctx.beginPath();
+            ctx.arc(x, y, 9, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawLine(ctx, x1, y1, x2, y2) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        function startWorkoutPlayer() {
+            activeWorkoutIndex = 0;
+            document.getElementById('workoutPlayerModal').classList.remove('hidden');
+            loadWorkoutStep();
+        }
+
+        function startSpecificWorkout(id) {
+            const idx = EXERCISES_DATA.findIndex(e => e.id === id);
+            if (idx !== -1) {
+                activeWorkoutIndex = idx;
+                document.getElementById('workoutPlayerModal').classList.remove('hidden');
+                loadWorkoutStep();
+            }
+        }
+
+        function previewExerciseAnimation(id) {
+            startSpecificWorkout(id);
+        }
+
+        function loadWorkoutStep() {
+            clearInterval(workoutTimer);
+            const ex = EXERCISES_DATA[activeWorkoutIndex];
+            
+            isResting = false;
+            isPaused = false;
+            remainingTime = ex.durationSec;
+
+            document.getElementById('playerExerciseTitle').innerText = ex.name;
+            document.getElementById('playerExerciseDesc').innerText = ex.desc;
+            document.getElementById('playerCategoryBadge').innerText = ex.categoryLabel;
+            document.getElementById('playerProgressIndex').innerText = `Gerakan ${activeWorkoutIndex + 1} dari ${EXERCISES_DATA.length}`;
+            document.getElementById('playerRestOverlay').classList.add('hidden');
+            document.getElementById('playerPlayBtn').innerHTML = '<i class="fa-solid fa-pause mr-2"></i> Jeda';
+
+            // Canvas inside modal
+            const canvas = document.getElementById('playerCanvas');
+            startStickmanLoop(canvas, ex.animationType);
+
+            speakSynthetic(`Gerakan berikutnya: ${ex.name}. Mulai!`);
+            runTimer();
+        }
+
+        function runTimer() {
+            updateTimerDisplay();
+            workoutTimer = setInterval(() => {
+                if (isPaused) return;
+
+                remainingTime--;
+                updateTimerDisplay();
+
+                if (remainingTime === 3) {
+                    playBeep(800, 0.1);
+                } else if (remainingTime === 2) {
+                    playBeep(800, 0.1);
+                } else if (remainingTime === 1) {
+                    playBeep(1000, 0.2);
+                }
+
+                if (remainingTime <= 0) {
+                    clearInterval(workoutTimer);
+                    if (!isResting) {
+                        // Mark exercise as complete
+                        autoMarkComplete(EXERCISES_DATA[activeWorkoutIndex].id);
+                        startRestPeriod();
+                    } else {
+                        // Rest finished, move next
+                        nextExercise();
+                    }
+                }
+            }, 1000);
+        }
+
+        function startRestPeriod() {
+            isResting = true;
+            remainingTime = 15; // 15s rest
+            document.getElementById('playerRestOverlay').classList.remove('hidden');
+            speakSynthetic("Waktu istirahat. Tarik napas.");
+            runTimer();
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('playerTimerText').innerText = remainingTime < 10 ? `0${remainingTime}` : remainingTime;
+        }
+
+        function togglePlayPauseWorkout() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('playerPlayBtn');
+            if (isPaused) {
+                btn.innerHTML = '<i class="fa-solid fa-play mr-2"></i> Lanjut';
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-pause mr-2"></i> Jeda';
+            }
+        }
+
+        function nextExercise() {
+            if (activeWorkoutIndex < EXERCISES_DATA.length - 1) {
+                activeWorkoutIndex++;
+                loadWorkoutStep();
+            } else {
+                closeWorkoutPlayer();
+                showToast("Selamat! 🎉", "Anda telah menyelesaikan seluruh sesi latihan hari ini!");
+                speakSynthetic("Selesai! Kerja bagus hari ini.");
+            }
+        }
+
+        function prevExercise() {
+            if (activeWorkoutIndex > 0) {
+                activeWorkoutIndex--;
+                loadWorkoutStep();
+            }
+        }
+
+        function completeCurrentExerciseManual() {
+            autoMarkComplete(EXERCISES_DATA[activeWorkoutIndex].id);
+            nextExercise();
+        }
+
+        function autoMarkComplete(id) {
+            const todayKey = getTodayKey();
+            let list = state.completedExercises[todayKey] || [];
+            if (!list.includes(id)) {
+                list.push(id);
+                state.completedExercises[todayKey] = list;
+                calculateStreak();
+                saveState();
+                renderChecklist();
+                renderStats();
+            }
+        }
+
+        function closeWorkoutPlayer() {
+            clearInterval(workoutTimer);
+            document.getElementById('workoutPlayerModal').classList.add('hidden');
+        }
+
+        function playBeep(freq = 520, duration = 0.1) {
+            if (state.soundMuted) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + duration);
+            } catch(e) { console.log(e); }
+        }
+
+        function speakSynthetic(text) {
+            if (state.soundMuted) return;
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
+                window.speechSynthesis.cancel(); // Stop previous
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'id-ID';
                 utterance.rate = 1.0;
@@ -173,209 +976,158 @@
             }
         }
 
-        function renderExercises() {
-            const container = document.getElementById('exerciseList');
-            container.innerHTML = '';
-            let completedCount = 0;
+        function toggleSoundMute() {
+            state.soundMuted = !state.soundMuted;
+            const btn = document.getElementById('muteBtn');
+            btn.innerHTML = state.soundMuted ? '<i class="fa-solid fa-volume-xmark text-slate-500"></i>' : '<i class="fa-solid fa-volume-high"></i>';
+        }
 
-            exercises.forEach(ex => {
-                const isCompleted = completedExercises[ex.id] || false;
-                if (isCompleted) completedCount++;
+        function initAlarmSystem() {
+            document.getElementById('reminderToggle').checked = state.reminderEnabled;
+            document.getElementById('reminderTimeInput').value = state.reminderTime;
 
-                const card = document.createElement('div');
-                card.className = `p-4 rounded-2xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${isCompleted ? 'bg-emerald-950/20 border-emerald-500/30' : 'bg-slate-800/50 border-slate-700/60 hover:border-indigo-500/50'}`;
-                
-                card.innerHTML = `
-                    <div class="flex items-start space-x-3.5">
-                        <input type="checkbox" ${isCompleted ? 'checked' : ''} onchange="toggleCheck('${ex.id}')" class="mt-1 w-5 h-5 accent-indigo-500 rounded cursor-pointer">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-400 uppercase">${ex.cat}</span>
-                                <span class="text-xs text-slate-400 font-medium">⏱️ ${ex.duration}s • ${ex.reps}</span>
-                            </div>
-                            <h4 class="font-bold text-base text-white mt-1 ${isCompleted ? 'line-through text-slate-400' : ''}">${ex.name}</h4>
-                            <p class="text-xs text-slate-400 mt-0.5 max-w-md">${ex.desc}</p>
-                        </div>
-                    </div>
-                    <button onclick="startWorkout('${ex.id}')" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md shadow-indigo-600/30 transition flex items-center justify-center gap-1.5">
-                        ▶️ Mulai Latihan
-                    </button>
-                `;
-                container.appendChild(card);
+            // Interval check every 30 seconds
+            alarmCheckInterval = setInterval(checkAlarmTrigger, 30000);
+        }
+
+        function toggleReminder(enabled) {
+            state.reminderEnabled = enabled;
+            saveState();
+            updateBanner();
+            showToast("Pengingat Harian", enabled ? `Diaktifkan jam ${state.reminderTime}` : "Dimatikan");
+        }
+
+        function saveReminderTime() {
+            const val = document.getElementById('reminderTimeInput').value;
+            if (val) {
+                state.reminderTime = val;
+                saveState();
+                updateBanner();
+                showToast("Berhasil Disimpan", `Pengingat diatur untuk jam ${val} WIB`);
+                playBeep(700, 0.2);
+            }
+        }
+
+        function setQuickTime(timeStr) {
+            document.getElementById('reminderTimeInput').value = timeStr;
+            saveReminderTime();
+        }
+
+        function updateBanner() {
+            const banner = document.getElementById('reminderTopBanner');
+            const badge = document.getElementById('bellBadge');
+            if (state.reminderEnabled) {
+                banner.classList.remove('hidden');
+                badge.classList.remove('hidden');
+                document.getElementById('bannerTime').innerText = `${state.reminderTime} WIB`;
+            } else {
+                banner.classList.add('hidden');
+                badge.classList.add('hidden');
+            }
+        }
+
+        function checkAlarmTrigger() {
+            if (!state.reminderEnabled) return;
+
+            const now = new Date();
+            const currentStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+            if (currentStr === state.reminderTime) {
+                triggerWorkoutAlarm();
+            }
+        }
+
+        function triggerWorkoutAlarm() {
+            playBeep(880, 0.5);
+            speakSynthetic("Waktunya olahraga jam 4 sore! Mari bakar lemak perut dan kencangkan bokong.");
+
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("FitCore & Glutes Reminder 🏋️", {
+                    body: "Waktunya sesi latihan sore Anda! Klik untuk membuka latihan.",
+                    icon: "https://cdn-icons-png.flaticon.com/512/3843/3843009.png"
+                });
+            } else {
+                showToast("Waktunya Olahraga! ⏰", "Saatnya melakukan checklist latihan sore Anda!");
+            }
+        }
+
+        function testAudioAlarm() {
+            triggerWorkoutAlarm();
+        }
+
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        showToast("Izin Diberikan", "Anda akan menerima notifikasi pengingat harian.");
+                    } else {
+                        showToast("Izin Ditolak", "Notifikasi web tidak diizinkan.");
+                    }
+                });
+            } else {
+                showToast("Tidak Didukung", "Browser Anda tidak mendukung Web Notification.");
+            }
+        }
+
+        function renderStats() {
+            let totalDays = 0;
+            Object.keys(state.completedExercises).forEach(key => {
+                if (state.completedExercises[key].length >= 3) {
+                    totalDays++;
+                }
             });
 
-            const percent = Math.round((completedCount / exercises.length) * 100);
-            document.getElementById('progressText').innerText = `${completedCount} / ${exercises.length} Selesai (${percent}%)`;
-            document.getElementById('progressBar').style.width = `${percent}%`;
-        }
+            document.getElementById('statTotalCompletedDays').innerText = `${totalDays} Hari`;
+            document.getElementById('statBestStreak').innerText = `${state.streak} Hari`;
 
-        function toggleCheck(id) {
-            completedExercises[id] = !completedExercises[id];
-            localStorage.setItem('fit_completed_' + new Date().toDateString(), JSON.stringify(completedExercises));
-            renderExercises();
-            playBeep(600, 100);
-        }
+            // Weekly Log Tracker
+            const container = document.getElementById('weeklyTrackerLog');
+            container.innerHTML = '';
 
-        function startWorkout(id) {
-            currentActiveExercise = exercises.find(e => e.id === id);
-            if (!currentActiveExercise) return;
+            const daysMap = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                const completedCount = (state.completedExercises[key] || []).length;
+                const isDone = completedCount >= 3;
 
-            document.getElementById('modalCategory').innerText = currentActiveExercise.cat;
-            document.getElementById('modalTitlenama').innerText = currentActiveExercise.name;
-            document.getElementById('modalDesc').innerText = currentActiveExercise.desc;
-            document.getElementById('repCounter').innerText = `Target: ${currentActiveExercise.reps}`;
-
-            document.getElementById('workoutModal').classList.remove('hidden');
-            timeLeft = currentActiveExercise.duration;
-            isPaused = false;
-            document.getElementById('pausePlayBtn').innerText = 'Pause';
-
-            startTimer();
-            startAnimation(currentActiveExercise.id);
-            speakText(`Mulai ${currentActiveExercise.name}`);
-        }
-
-        function closeWorkout() {
-            document.getElementById('workoutModal').classList.add('hidden');
-            clearInterval(timerInterval);
-            if (currentAnimation) currentAnimation.pause();
-            window.speechSynthesis.cancel();
-        }
-
-        function startTimer() {
-            clearInterval(timerInterval);
-            updateTimerDisplay();
-
-            timerInterval = setInterval(() => {
-                if (!isPaused) {
-                    timeLeft--;
-                    updateTimerDisplay();
-
-                    if (timeLeft <= 3 && timeLeft > 0) playBeep(500, 100);
-
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        playBeep(880, 400);
-                        speakText('Waktu habis! Kerja bagus.');
-                        completedExercises[currentActiveExercise.id] = true;
-                        localStorage.setItem('fit_completed_' + new Date().toDateString(), JSON.stringify(completedExercises));
-                        renderExercises();
-                        setTimeout(() => closeWorkout(), 1200);
-                    }
-                }
-            }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-            const secs = (timeLeft % 60).toString().padStart(2, '0');
-            document.getElementById('timerDisplay').innerText = `${mins}:${secs}`;
-        }
-
-        function togglePauseWorkout() {
-            isPaused = !isPaused;
-            document.getElementById('pausePlayBtn').innerText = isPaused ? 'Lanjutkan' : 'Pause';
-            if (isPaused && currentAnimation) currentAnimation.pause();
-            else if (!isPaused && currentAnimation) currentAnimation.play();
-        }
-
-        function completeCurrentWorkout() {
-            if (currentActiveExercise) {
-                completedExercises[currentActiveExercise.id] = true;
-                localStorage.setItem('fit_completed_' + new Date().toDateString(), JSON.stringify(completedExercises));
-                renderExercises();
-                playBeep(750, 200);
-                speakText('Gerakan selesai!');
-            }
-            closeWorkout();
-        }
-
-        function startAnimation(id) {
-            if (currentAnimation) currentAnimation.pause();
-            const badge = document.getElementById('exerciseStateBadge');
-
-            if (id === 'rev_crunch' || id === 'leg_raises') {
-                badge.innerText = "Fokus Perut Bawah";
-                currentAnimation = anime({
-                    targets: '#legs',
-                    translateY: [0, -25, 0],
-                    rotate: [0, -15, 0],
-                    easing: 'easeInOutSine',
-                    duration: 1800,
-                    loop: true
-                });
-            } else if (id === 'glute_bridges') {
-                badge.innerText = "Angkat & Kencangkan Bokong";
-                currentAnimation = anime({
-                    targets: '#torso, #head',
-                    translateY: [0, -30, 0],
-                    easing: 'easeInOutQuad',
-                    duration: 2000,
-                    loop: true
-                });
-            } else if (id === 'body_squats') {
-                badge.innerText = "Turun & Dorong Tumit";
-                currentAnimation = anime({
-                    targets: '#figure',
-                    translateY: [0, 25, 0],
-                    scaleY: [1, 0.85, 1],
-                    easing: 'easeInOutQuad',
-                    duration: 2200,
-                    loop: true
-                });
-            } else {
-                badge.innerText = "Gerakan Stabil & Kontrol";
-                currentAnimation = anime({
-                    targets: '#thigh',
-                    rotate: [0, 25, 0],
-                    easing: 'easeInOutSine',
-                    duration: 1500,
-                    loop: true
-                });
+                const dayBox = document.createElement('div');
+                dayBox.className = 'flex flex-col items-center gap-1.5';
+                dayBox.innerHTML = `
+                    <span class="text-[10px] text-slate-400 font-semibold">${daysMap[d.getDay()]}</span>
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold border transition ${
+                        isDone 
+                            ? 'bg-teal-500 border-teal-500 text-white shadow-md shadow-teal-500/20' 
+                            : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400'
+                    }">
+                        ${d.getDate()}
+                    </div>
+                `;
+                container.appendChild(dayBox);
             }
         }
 
-        function updateClock() {
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            document.getElementById('currentTime').innerText = `${hours}:${minutes}:${seconds}`;
-
-            if (now.getHours() === 16 && now.getMinutes() === 0 && now.getSeconds() === 0) {
-                triggerReminderAlarm();
-            }
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        function requestNotification() {
-            if ('Notification' in window) {
-                Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') {
-                        document.getElementById('notifStatus').innerText = 'Reminder Aktif (16:00)';
-                        new Notification('FitCore & Glutes', { body: 'Reminder workout jam 4 sore telah diaktifkan!' });
-                        playBeep(700, 200);
-                    } else {
-                        alert('Izin notifikasi ditolak di browser.');
-                    }
-                });
-            } else {
-                alert('Browser tidak mendukung Web Notification.');
+        function resetAllData() {
+            if (confirm("Apakah Anda yakin ingin menghapus semua riwayat dan statistik latihan?")) {
+                localStorage.removeItem('fitcore_glutes_data');
+                location.reload();
             }
         }
 
-        function triggerReminderAlarm() {
-            playBeep(880, 500);
-            speakText('Waktunya olahraga sore! Ayo latih perut bawah dan bokong sekarang.');
-            if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('Waktunya Olahraga Sore! 🔥', {
-                    body: 'Sudah jam 4 sore. Yuk mulai rutinitas perut bawah dan glutes hari ini!'
-                });
-            }
-        }
+        function showToast(title, msg) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastMsg').innerText = msg;
 
-        renderExercises();
+            toast.classList.remove('-translate-y-24', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('-translate-y-24', 'opacity-0');
+            }, 3500);
+        }
     </script>
 </body>
 </html>
